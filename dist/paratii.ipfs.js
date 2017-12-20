@@ -33,7 +33,7 @@ var ParatiiIPFS = exports.ParatiiIPFS = function () {
     var defaults = {
       protocol: null,
       onReadyHook: [],
-      'config.addresses.swarm': ['/dns4/star.paratii.video/wss/p2p-webrtc-star'],
+      'config.addresses.swarm': ['/dns4/star.paratii.video/tcp/443/wss/p2p-webrtc-star'],
       'config.Bootstrap': ['/dns4/bootstrap.paratii.video/tcp/443/wss/ipfs/QmeUmy6UtuEs91TH6bKnfuU1Yvp63CkZJWm624MjBEBazW'],
       'repo': '/tmp/paratii-alpha-' + String(Math.random()), // key where to save information
       'bitswap.maxMessageSize': 32 * 1024,

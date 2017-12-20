@@ -22,6 +22,7 @@ var config = {
       // styles: stylesDir,
     }
   },
+  devtool: 'inline-source-map', // generate sourcemaps
   node: {
     fs: 'empty',
     child_process: 'empty',
