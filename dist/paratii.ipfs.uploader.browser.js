@@ -17,10 +17,8 @@ var _require = require('events'),
 
 var dopts = require('default-options');
 var pull = require('pull-stream');
-// const pullFilereader = require('pull-filereader')
-var fs = require('fs');
-
-var toPull = require('stream-to-pull-stream');
+var pullFilereader = require('pull-filereader');
+// const toPull = require('stream-to-pull-stream')
 // const ytdl = require('ytdl-core')
 // const vidl = require('vimeo-downloader')
 // const readline = require('readline')
@@ -35,6 +33,7 @@ var Uploader = function (_EventEmitter) {
 
     _this.setOptions(opts);
     _this._ipfs = paratiiIPFS; // this is the paratii.ipfs.js
+    console.log('========================browser-uploader=====================');
     return _this;
   }
 
@@ -66,10 +65,10 @@ var Uploader = function (_EventEmitter) {
 
         var opts = {
           onDone: function onDone(files) {
-            return resolve(files);
+            resolve(files);
           },
           onError: function onError(err) {
-            return reject(err);
+            reject(err);
           }
         };
         console.log(opts);
@@ -113,8 +112,7 @@ var Uploader = function (_EventEmitter) {
           return pull(pull.values([{
             path: file.name,
             // content: pullFilereader(file)
-            content: pull(toPull(fs.createReadStream(file)), // file here is a path to file.
-            pull.through(function (chunk) {
+            content: pull(pullFilereader(file), pull.through(function (chunk) {
               return opts.onProgress(chunk.length, Math.floor((meta.total + chunk.length) / meta.fileSize) * 100);
             }))
           }]), _this2._node.files.addPullStream({ chunkerOptions: { maxChunkSize: _this2._chunkSize } }), // default size 262144
@@ -125,15 +123,12 @@ var Uploader = function (_EventEmitter) {
             var file = res[0];
             console.log('Adding %s finished', file.path);
             opts.onFileReady(file);
-            setImmediate(function () {
-              cb();
-            });
           }));
         }), pull.collect(function (err, files) {
           if (err) {
             return opts.onError(err);
           }
-          console.log('uploader Finished', files);
+
           return opts.onDone(files);
         }));
       });

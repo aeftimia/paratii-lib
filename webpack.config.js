@@ -12,9 +12,9 @@ var config = {
   entry: jsDir + '/paratii.js',
   output: {
     path: buildDir,
-    filename: 'bundle.js',
-    library: 'paratii-lib',
-    libraryTarget: 'commonjs2'
+    filename: 'bundle.js'
+    // library: 'paratii-lib',
+    // libraryTarget: 'commonjs2'
   },
   resolve: {
     alias: {
