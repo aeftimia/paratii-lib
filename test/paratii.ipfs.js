@@ -49,7 +49,7 @@ describe('ParatiiIPFS: :', function () {
     }).catch(done)
   })
 
-  it('should allow for file upload', async function () {
+  it.skip('should allow for file upload', async function () {
     // let file = fs.createReadStream('test/data/some-file.txt')
     let file = 'test/data/some-file.txt'
     console.log(file)
