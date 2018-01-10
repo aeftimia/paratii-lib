@@ -4,6 +4,10 @@
  * @module IPFS UPLOADER : Paratii IPFS uploader interface.
  */
 
+var _regenerator = require('babel-runtime/regenerator');
+
+var _regenerator2 = _interopRequireDefault(_regenerator);
+
 var _setImmediate2 = require('babel-runtime/core-js/set-immediate');
 
 var _setImmediate3 = _interopRequireDefault(_setImmediate2);
@@ -53,28 +57,24 @@ var _require2 = require('async'),
 
 var once = require('once');
 
-var Uploader = function (_EventEmitter) {
-  (0, _inherits3.default)(Uploader, _EventEmitter);
+var ParatiiIpfsUploader = function (_EventEmitter) {
+  (0, _inherits3.default)(ParatiiIpfsUploader, _EventEmitter);
 
-  function Uploader(paratiiIPFS, opts) {
-    (0, _classCallCheck3.default)(this, Uploader);
+  function ParatiiIpfsUploader(paratiiIPFS, opts) {
+    (0, _classCallCheck3.default)(this, ParatiiIpfsUploader);
 
-    var _this = (0, _possibleConstructorReturn3.default)(this, (Uploader.__proto__ || (0, _getPrototypeOf2.default)(Uploader)).call(this));
+    var _this = (0, _possibleConstructorReturn3.default)(this, (ParatiiIpfsUploader.__proto__ || (0, _getPrototypeOf2.default)(ParatiiIpfsUploader)).call(this));
 
     _this.setOptions(opts);
     _this._ipfs = paratiiIPFS; // this is the paratii.ipfs.js
     return _this;
   }
 
-  (0, _createClass3.default)(Uploader, [{
+  (0, _createClass3.default)(ParatiiIpfsUploader, [{
     key: 'setOptions',
     value: function setOptions() {
       var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
-      // if (!opts || !opts.node) {
-      //   throw new Error('IPFS Instance is required By Uploader.')
-      // }
-      this._node = opts.node; // this is the actual IPFS node.
       this._chunkSize = opts.chunkSize || 64048;
     }
   }, {
@@ -116,122 +116,158 @@ var Uploader = function (_EventEmitter) {
     value: function upload(files, options) {
       var _this2 = this;
 
-      var defaults = {
-        onStart: function onStart() {}, // function()
-        onError: function onError(err) {
-          if (err) throw err;
-        }, // function (err)
-        onFileReady: function onFileReady(file) {}, // function(file)
-        onProgress: function onProgress(chunkLength, progress) {}, // function(chunkLength)
-        onDone: function onDone(file) {} // function(file)
-      };
+      var defaults, opts, meta, ipfsInstance;
+      return _regenerator2.default.async(function upload$(_context) {
+        while (1) {
+          switch (_context.prev = _context.next) {
+            case 0:
+              defaults = {
+                onStart: function onStart() {}, // function()
+                onError: function onError(err) {
+                  if (err) throw err;
+                }, // function (err)
+                onFileReady: function onFileReady(file) {}, // function(file)
+                onProgress: function onProgress(chunkLength, progress) {}, // function(chunkLength)
+                onDone: function onDone(file) {} // function(file)
+              };
+              opts = dopts(options, defaults, { allowUnknown: true });
+              meta = {}; // holds File metadata.
 
-      var opts = dopts(options, defaults, { allowUnknown: true });
-      var meta = {}; // holds File metadata.
-      // let files = [file]
-      this._ipfs.start(function () {
-        // trigger onStart callback
-        opts.onStart();
+              _context.next = 5;
+              return _regenerator2.default.awrap(this._ipfs.getIPFSInstance());
 
-        pull(pull.values(files), pull.through(function (file) {
-          console.log('Adding ', file);
-          meta.fileSize = file.size;
-          meta.total = 0;
-        }), pull.asyncMap(function (file, cb) {
-          return pull(pull.values([{
-            path: file.name,
-            // content: pullFilereader(file)
-            content: pull(toPull(fs.createReadStream(file)), // file here is a path to file.
-            pull.through(function (chunk) {
-              return opts.onProgress(chunk.length, Math.floor((meta.total + chunk.length) / meta.fileSize) * 100);
-            }))
-          }]), _this2._node.files.addPullStream({ chunkerOptions: { maxChunkSize: _this2._chunkSize } }), // default size 262144
-          pull.collect(function (err, res) {
-            if (err) {
-              return opts.onError(err);
-            }
-            var file = res[0];
-            console.log('Adding %s finished', file.path);
-            opts.onFileReady(file);
-            (0, _setImmediate3.default)(function () {
-              cb();
-            });
-          }));
-        }), pull.collect(function (err, files) {
-          if (err) {
-            return opts.onError(err);
+            case 5:
+              ipfsInstance = _context.sent;
+
+              this._ipfs.start(function () {
+                // trigger onStart callback
+                opts.onStart();
+
+                pull(pull.values(files), pull.through(function (file) {
+                  // console.log('Adding ', file)
+                  meta.fileSize = file.size;
+                  meta.total = 0;
+                }), pull.asyncMap(function (file, cb) {
+                  return pull(pull.values([{
+                    path: file.name,
+                    // content: pullFilereader(file)
+                    content: pull(toPull(fs.createReadStream(file)), // file here is a path to file.
+                    pull.through(function (chunk) {
+                      return opts.onProgress(chunk.length, Math.floor((meta.total + chunk.length) / meta.fileSize) * 100);
+                    }))
+                  }]), ipfsInstance.files.addPullStream({ chunkerOptions: { maxChunkSize: _this2._chunkSize } }), // default size 262144
+                  pull.collect(function (err, res) {
+                    if (err) {
+                      return opts.onError(err);
+                    }
+                    var file = res[0];
+                    // console.log('Adding %s finished', file.path)
+                    opts.onFileReady(file);
+                    (0, _setImmediate3.default)(function () {
+                      cb();
+                    });
+                  }));
+                }), pull.collect(function (err, files) {
+                  if (err) {
+                    return opts.onError(err);
+                  }
+                  // console.log('uploader Finished', files)
+                  return opts.onDone(files);
+                }));
+              });
+
+            case 7:
+            case 'end':
+              return _context.stop();
           }
-          console.log('uploader Finished', files);
-          return opts.onDone(files);
-        }));
-      });
+        }
+      }, null, this);
     }
 
     /**
      * upload an entire directory to IPFS
      * @param  {String}   dirPath path to directory
-     * @param  {Function} cb      (err, hash)
-     * @return {String}           returns the hash for the uploaded folder.
+     * @return {Promise}           returns the {hash, path, size} for the uploaded folder.
      */
 
   }, {
-    key: 'uploadDir',
-    value: function uploadDir(dirPath, cb) {
-      cb = once(cb);
-      var resp = null;
-      console.log('adding ', dirPath, ' to IPFS');
-      var addStream = this._node.files.addReadableStream();
-      addStream.on('data', function (file) {
-        console.log('dirPath ', dirPath);
-        console.log('file Added ', file);
-        if ('/' + file.path === dirPath) {
-          console.log('this is the hash to return ');
-          resp = file;
-          nextTick(function () {
-            return cb(null, resp);
-          });
+    key: 'addDirectory',
+    value: function addDirectory(dirPath) {
+      var ipfsInstance;
+      return _regenerator2.default.async(function addDirectory$(_context2) {
+        while (1) {
+          switch (_context2.prev = _context2.next) {
+            case 0:
+              _context2.next = 2;
+              return _regenerator2.default.awrap(this._ipfs.getIPFSInstance());
+
+            case 2:
+              ipfsInstance = _context2.sent;
+              return _context2.abrupt('return', new _promise2.default(function (resolve, reject) {
+                // cb = once(cb)
+                var resp = null;
+                // console.log('adding ', dirPath, ' to IPFS')
+
+                var addStream = ipfsInstance.files.addReadableStream();
+                addStream.on('data', function (file) {
+                  // console.log('dirPath ', dirPath)
+                  // console.log('file Added ', file)
+                  if (file.path === dirPath) {
+                    // console.log('this is the hash to return ')
+                    resp = file;
+                    nextTick(function () {
+                      return resolve(resp);
+                    });
+                  }
+                });
+
+                addStream.on('end', function () {
+                  // console.log('addStream ended')
+                  // nextTick(() => cb(null, resp))
+                });
+
+                fs.readdir(dirPath, function (err, files) {
+                  if (err) return reject(err);
+                  eachSeries(files, function (file, next) {
+                    next = once(next);
+                    try {
+                      // console.log('reading file ', file)
+                      var rStream = fs.createReadStream(path.join(dirPath, file));
+                      rStream.on('error', function (err) {
+                        if (err) {
+                          console.log('rStream Error ', err);
+                          return next();
+                        }
+                      });
+                      if (rStream) {
+                        addStream.write({
+                          path: path.join(dirPath, file),
+                          content: rStream
+                        });
+                      }
+                    } catch (e) {
+                      if (e) {
+                        console.log('createReadStream Error: ', e);
+                      }
+                    } finally {}
+                    // next()
+                    nextTick(function () {
+                      return next();
+                    });
+                  }, function (err) {
+                    if (err) return reject(err);
+                    // addStream.destroy()
+                    addStream.end();
+                  });
+                });
+              }));
+
+            case 4:
+            case 'end':
+              return _context2.stop();
+          }
         }
-      });
-
-      addStream.on('end', function () {
-        console.log('addStream ended');
-        // nextTick(() => cb(null, resp))
-      });
-
-      fs.readdir(dirPath, function (err, files) {
-        if (err) return cb(err);
-        eachSeries(files, function (file, next) {
-          next = once(next);
-          try {
-            console.log('reading file ', file);
-            var rStream = fs.createReadStream(path.join(dirPath, file));
-            rStream.on('error', function (err) {
-              if (err) {
-                console.log('rStream Error ', err);
-                return next();
-              }
-            });
-            if (rStream) {
-              addStream.write({
-                path: path.join(dirPath, file),
-                content: rStream
-              });
-            }
-          } catch (e) {
-            if (e) {
-              console.log('gotcha ', e);
-            }
-          } finally {}
-          // next()
-          nextTick(function () {
-            return next();
-          });
-        }, function (err) {
-          if (err) return cb(err);
-          // addStream.destroy()
-          addStream.end();
-        });
-      });
+      }, null, this);
     }
 
     /**
@@ -262,13 +298,14 @@ var Uploader = function (_EventEmitter) {
       var msg = this._ipfs.protocol.createCommand('transcode', { hash: fileHash, author: opts.author });
       // FIXME : This is for dev, so we just signal our transcoder node.
       // This needs to be dynamic later on.
-      this._node.swarm.connect(opts.transcoder, function (err, success) {
+      var ipfsInstance = this._ipfs.getIPFSInstance();
+      ipfsInstance.swarm.connect(opts.transcoder, function (err, success) {
         if (err) return opts.onError(err);
-        _this3._node.swarm.peers(function (err, peers) {
-          console.log('peers: ', peers);
+        ipfsInstance.swarm.peers(function (err, peers) {
+          // console.log('peers: ', peers)
           if (err) return opts.onError(err);
           peers.map(function (peer) {
-            console.log('sending transcode msg to ', peer.peer.id.toB58String());
+            // console.log('sending transcode msg to ', peer.peer.id.toB58String())
             _this3._ipfs.protocol.network.sendMessage(peer.peer.id, msg, function (err) {
               if (err) opts.onError(err);
             });
@@ -278,14 +315,14 @@ var Uploader = function (_EventEmitter) {
 
           // paratii transcoder signal.
           _this3._ipfs.protocol.notifications.on('command', function (peerId, command) {
-            console.log('paratii protocol: Got Command ', command);
+            // console.log('paratii protocol: Got Command ', command)
             if (command.payload.toString() === 'transcoding:done') {
               var args = JSON.parse(command.args.toString());
-              var result = JSON.parse(args.result);
+              // let result = JSON.parse(args.result)
 
               if (args.hash === fileHash) {
-                console.log('args: ', args);
-                console.log('result: ', result);
+                // console.log('args: ', args)
+                // console.log('result: ', result)
                 return opts.onDone(null, fileHash);
               }
             }
@@ -306,7 +343,7 @@ var Uploader = function (_EventEmitter) {
       var file = void 0;
       if (Array.isArray(files)) {
         if (files.length < 1) {
-          console.log('_signalTranscoder Got an empty Array. files: ', files);
+          // console.log('_signalTranscoder Got an empty Array. files: ', files)
           return;
         }
         file = files[0];
@@ -318,7 +355,7 @@ var Uploader = function (_EventEmitter) {
         author: '0x', // author address,
         onDone: function onDone(err, folderHash) {
           if (err) throw err;
-          console.log('transcoder done ', folderHash);
+          // console.log('transcoder done ', folderHash)
         }
       });
     }
@@ -420,7 +457,7 @@ var Uploader = function (_EventEmitter) {
           return callback(err);
         }
         var file = res[0];
-        console.log('Adding %s finished', file.path);
+        // console.log('Adding %s finished', file.path)
 
         // statusEl.innerHTML += `Added ${file.path} as ${file.hash} ` + '<br>'
         // Trigger paratii transcoder signal
@@ -433,13 +470,14 @@ var Uploader = function (_EventEmitter) {
       var _this5 = this;
 
       var msg = this._ipfs.protocol.createCommand('transcode', { hash: file.hash, author: this.id.id });
-      this._node.swarm.connect('/dns4/bootstrap.paratii.video/tcp/443/wss/ipfs/QmeUmy6UtuEs91TH6bKnfuU1Yvp63CkZJWm624MjBEBazW', function (err, success) {
+      var ipfsInstance = this._ipfs.getIPFSInstance();
+      ipfsInstance.swarm.connect('/dns4/bootstrap.paratii.video/tcp/443/wss/ipfs/QmeUmy6UtuEs91TH6bKnfuU1Yvp63CkZJWm624MjBEBazW', function (err, success) {
         if (err) throw err;
         _this5._node.swarm.peers(function (err, peers) {
-          console.log('peers: ', peers);
+          // console.log('peers: ', peers)
           if (err) throw err;
           peers.map(function (peer) {
-            console.log('sending transcode msg to ', peer.peer.id.toB58String());
+            // console.log('sending transcode msg to ', peer.peer.id.toB58String())
             _this5._ipfs.protocol.network.sendMessage(peer.peer.id, msg, function (err) {
               if (err) console.warn('[Paratii-protocol] Error ', err);
             });
@@ -451,12 +489,12 @@ var Uploader = function (_EventEmitter) {
       });
       // paratii transcoder signal.
       this._ipfs.protocol.notifications.on('command', function (peerId, command) {
-        console.log('paratii protocol: Got Command ', command);
+        // console.log('paratii protocol: Got Command ', command)
         if (command.payload.toString() === 'transcoding:done') {
-          var args = JSON.parse(command.args.toString());
-          var result = JSON.parse(args.result);
-          console.log('args: ', args);
-          console.log('result: ', result);
+          // let args = JSON.parse(command.args.toString())
+          // let result = JSON.parse(args.result)
+          // console.log('args: ', args)
+          // console.log('result: ', result)
           // statusEl.innerHTML += `Video HLS link: /ipfs/${result.master.hash}\n`
 
           // titleEl = document.querySelector('#input-title')
@@ -479,7 +517,7 @@ var Uploader = function (_EventEmitter) {
       });
     }
   }]);
-  return Uploader;
+  return ParatiiIpfsUploader;
 }(EventEmitter);
 
-module.exports = Uploader;
+module.exports = ParatiiIpfsUploader;

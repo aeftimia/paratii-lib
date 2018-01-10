@@ -1,13 +1,7 @@
-// const whyIsNodeRunning = require('why-is-node-running')
-
-// import { Paratii } from '../lib/paratii.js'
-// import { address, privateKey } from './utils.js'
 import { ParatiiIPFS } from '../lib/paratii.ipfs.js'
 import { assert } from 'chai'
-// const FileApi = require('file-api')
-// const fs = require('fs')
 
-describe('ParatiiIPFS: :', function () {
+describe('ParatiiIPFSUploader: :', function () {
   let paratiiIPFS
   this.timeout(30000)
 
@@ -54,7 +48,7 @@ describe('ParatiiIPFS: :', function () {
 
   it('addAndTranscode() should work as expected', async function () {
     let files = []
-    await paratiiIPFS.getIPFSInstance()
+    // await paratiiIPFS.getIPFSInstance()
     await paratiiIPFS.uploader.addAndTranscode(files)
   })
 

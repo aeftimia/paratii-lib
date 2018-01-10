@@ -105,6 +105,8 @@ It can also handle uploads of lists of files:
       onDone: Function // function(file)
     })
 
+## `ipfs.uploader.addDirectory(pathToDirectory)`
+
 
 ## `ipfs.uploader.transcode(fileHash, options)`
 

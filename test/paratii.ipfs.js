@@ -63,4 +63,11 @@ describe('ParatiiIPFS: :', function () {
     assert.isOk(paratii.ipfs)
     assert.isOk(await paratii.ipfs.getIPFSInstance())
   })
+
+  it('addDirectory should be defined', function () {
+    let paratii = new Paratii()
+    // addDirectoryis mapped to ipfs.uploader.addDirectory and tested in parati.ipfs.uploader.js
+    // (here we just test that the function is defined)
+    assert.isOk(paratii.ipfs.addDirectory)
+  })
 })

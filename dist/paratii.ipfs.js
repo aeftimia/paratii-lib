@@ -40,7 +40,7 @@ global.Buffer = global.Buffer || require('buffer').Buffer; // import { paratiiIP
 
 var Ipfs = require('ipfs');
 var dopts = require('default-options');
-var Uploader = require('./paratii.ipfs.uploader.js');
+var ParatiiIpfsUploader = require('./paratii.ipfs.uploader.js');
 // var pull = require('pull-stream')
 // var pullFilereader = require('pull-filereader')
 
@@ -60,7 +60,7 @@ var ParatiiIPFS = exports.ParatiiIPFS = function () {
     };
     this.config = dopts(config, defaults, { allowUnknown: true });
 
-    this.uploader = new Uploader(this);
+    this.uploader = new ParatiiIpfsUploader(this, this.config);
   }
 
   (0, _createClass3.default)(ParatiiIPFS, [{
@@ -206,6 +206,11 @@ var ParatiiIPFS = exports.ParatiiIPFS = function () {
       });
     }
   }, {
+    key: 'addDirectory',
+    value: function addDirectory(dirPath) {
+      return this.uploader.addDirectory(dirPath);
+    }
+  }, {
     key: 'addJSON',
     value: function addJSON(data) {
       var ipfs, obj, node;
@@ -312,10 +317,6 @@ var ParatiiIPFS = exports.ParatiiIPFS = function () {
   }, {
     key: 'start',
     value: function start(callback) {
-      // if (!window.Ipfs) {
-      //   return callback(new Error('window.Ipfs is not available, call initIPFS first'))
-      // }
-
       if (this.ipfs && this.ipfs.isOnline()) {
         return callback();
       }
